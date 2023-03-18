@@ -191,9 +191,124 @@ root@f3d42513a02c:/workspace/projects/helloworld#
 
 ## Test
 
+Run tests with `cabal test`.
+
 ### doctest
 
-TODO: write description
+1. Add the doctest configuration to the cabal file.  
+
+   ```cabal
+   test-suite doctest
+       type:                 exitcode-stdio-1.0
+       default-language:     Haskell2010
+       hs-source-dirs:       test/doctest
+       ghc-options:          -Wall
+       main-is:              doctest.hs
+       build-depends:        base
+                           , doctest
+   ```
+
+1. Create the source specified in the `main-is` of the cabal file.  
+
+   ```haskell
+   module Main where
+
+   import Test.DocTest
+
+   main :: IO ()
+   main = doctest ["src/MyLib.hs", "app/Main.hs"]
+   ```
+
+1. Write a doctest. The following source is an example of `app/Main.hs`.  
+    1. before  
+
+       ```haskell
+       main :: IO ()
+       main = do
+         putStrLn "Hello, Haskell!"
+         MyLib.someFunc
+       ```
+
+    1. after  
+
+       ```haskell
+       -- |
+       -- Entry point
+       -- >>> main
+       -- Hello, Haskell!
+       -- someFunc
+       main :: IO ()
+       main = do
+         putStrLn "Hello, Haskell!"
+         MyLib.someFunc
+       ```
+
+1. Run test by `cabal test` command.  
+
+   ```txt
+   root@8c6481710a1b:/workspace/projects/helloworld# cabal test; echo $?
+   Build profile: -w ghc-9.4.4 -O1
+   In order, the following will be built (use -v for more details):
+    - helloworld-0.1.0.0 (test:doctest) (first run)
+    - helloworld-0.1.0.0 (test:helloworld-test) (first run)
+   Preprocessing test suite 'doctest' for helloworld-0.1.0.0..
+   Preprocessing test suite 'helloworld-test' for helloworld-0.1.0.0..
+   Building test suite 'helloworld-test' for helloworld-0.1.0.0..
+   Building test suite 'doctest' for helloworld-0.1.0.0..
+   Running 1 test suites...
+   Test suite helloworld-test: RUNNING...
+   Test suite helloworld-test: PASS
+   Test suite logged to:
+   /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/helloworld-test/test/helloworld-0.1.0.0-helloworld-test.log
+   1 of 1 test suites (1 of 1 test cases) passed.
+   Running 1 test suites...
+   Test suite doctest: RUNNING...
+   Test suite doctest: PASS
+   Test suite logged to:
+   /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/doctest/test/helloworld-0.1.0.0-doctest.log
+   1 of 1 test suites (1 of 1 test cases) passed.
+   0
+   root@8c6481710a1b:/workspace/projects/helloworld# 
+   ```
+
+The output when there is a NG in the test is as follows.
+
+```txt
+root@8c6481710a1b:/workspace/projects/helloworld# cabal test; echo $?
+Build profile: -w ghc-9.4.4 -O1
+In order, the following will be built (use -v for more details):
+ - helloworld-0.1.0.0 (test:doctest) (first run)
+ - helloworld-0.1.0.0 (test:helloworld-test) (first run)
+Preprocessing test suite 'helloworld-test' for helloworld-0.1.0.0..
+Preprocessing test suite 'doctest' for helloworld-0.1.0.0..
+Building test suite 'helloworld-test' for helloworld-0.1.0.0..
+Building test suite 'doctest' for helloworld-0.1.0.0..
+Running 1 test suites...
+Test suite helloworld-test: RUNNING...
+Test suite helloworld-test: PASS
+Test suite logged to:
+/workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/helloworld-test/test/helloworld-0.1.0.0-helloworld-test.log
+1 of 1 test suites (1 of 1 test cases) passed.
+Running 1 test suites...
+Test suite doctest: RUNNING...
+app/Main.hs:7: failure in expression `main'
+expected: Hello, Haskell
+          someFunc
+ but got: Hello, Haskell!
+                        ^
+          someFunc
+
+Examples: 2  Tried: 2  Errors: 0  Failures: 1
+
+Test suite doctest: FAIL
+Test suite logged to:
+/workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/doctest/test/helloworld-0.1.0.0-doctest.log
+0 of 1 test suites (0 of 1 test cases) passed.
+Error: cabal: Tests failed for test:doctest from helloworld-0.1.0.0.
+
+1
+root@8c6481710a1b:/workspace/projects/helloworld# 
+```
 
 ### HSpec
 
