@@ -243,7 +243,7 @@ Run tests with `cabal test`.
          MyLib.someFunc
        ```
 
-1. Run test by `cabal test` command.  
+1. Run tests with `cabal test`.  
 
    ```txt
    root@8c6481710a1b:/workspace/projects/helloworld# cabal test; echo $?
@@ -312,4 +312,150 @@ root@8c6481710a1b:/workspace/projects/helloworld#
 
 ### HSpec
 
-TODO: write description
+1. Add HSpec configuration to the cabal file.  
+
+   ```cabal
+   test-suite spec
+       type:                 exitcode-stdio-1.0
+       default-language:     Haskell2010
+       hs-source-dirs:       test/hspec
+       ghc-options:          -Wall
+       main-is:              Spec.hs
+       build-depends:        base
+                           , hspec >= 1.3
+                           , QuickCheck
+                           , helloworld
+       other-modules:        MyLibSpec
+       build-tool-depends:
+           , hspec-discover:hspec-discover
+   ```
+
+1. Create `test/hspec/Spec.hs` specified as `main-is` in the cabal file.  
+
+   ```haskell
+   {-# OPTIONS_GHC -F -pgmF hspec-discover #-}
+   ```
+
+1. Write test code in `test/hspec/MyLibSpec.hs`. For testing, I targeted a function that takes two Int arguments and returns the result of adding them together.  
+
+   ```haskell
+   module MyLibSpec (spec) where
+
+   import Test.Hspec
+   import MyLib
+
+   spec :: Spec
+   spec = do
+       describe "`addInt` takes two arguments of Int and returns the result of adding them." $ do
+           it "When give addInt 1 and 2 then return 3" $
+               MyLib.addInt 1 2 `shouldBe` 3
+   ```
+
+1. Add the function to be tested in `src/MyLib.hs`.  
+
+   ```haskell
+   module MyLib (someFunc, addInt) where
+
+   (省略)
+
+   addInt :: Int -> Int -> Int
+   addInt x y = x + y
+   ```
+
+1. Run tests with `cabal test`.  
+
+   ```txt
+   root@5499af50db5b:/workspace/projects/helloworld# cabal test; echo $?;
+   Build profile: -w ghc-9.4.4 -O1
+   In order, the following will be built (use -v for more details):
+    - helloworld-0.1.0.0 (test:doctest) (first run)
+    - helloworld-0.1.0.0 (test:helloworld-test) (first run)
+    - helloworld-0.1.0.0 (test:spec) (first run)
+   Preprocessing test suite 'spec' for helloworld-0.1.0.0..
+   Preprocessing test suite 'doctest' for helloworld-0.1.0.0..
+   Preprocessing test suite 'helloworld-test' for helloworld-0.1.0.0..
+   Building test suite 'helloworld-test' for helloworld-0.1.0.0..
+   Building test suite 'doctest' for helloworld-0.1.0.0..
+   Building test suite 'spec' for helloworld-0.1.0.0..
+   Running 1 test suites...
+   Test suite helloworld-test: RUNNING...
+   Test suite helloworld-test: PASS
+   Test suite logged to:
+   /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/helloworld-test/test/helloworld-0.1.0.0-helloworld-test.log
+   1 of 1 test suites (1 of 1 test cases) passed.
+   Running 1 test suites...
+   Test suite doctest: RUNNING...
+   Running 1 test suites...
+   Test suite spec: RUNNING...
+   Test suite spec: PASS
+   Test suite logged to:
+   /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/spec/test/helloworld-0.1.0.0-spec.log
+   1 of 1 test suites (1 of 1 test cases) passed.
+   Test suite doctest: PASS
+   Test suite logged to:
+   /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/doctest/test/helloworld-0.1.0.0-doctest.log
+   1 of 1 test suites (1 of 1 test cases) passed.
+   0
+   root@5499af50db5b:/workspace/projects/helloworld# 
+   ```
+
+The output when there is a NG in the test is as follows.
+
+```txt
+root@5499af50db5b:/workspace/projects/helloworld# cabal test; echo $?;
+Build profile: -w ghc-9.4.4 -O1
+In order, the following will be built (use -v for more details):
+ - helloworld-0.1.0.0 (test:doctest) (first run)
+ - helloworld-0.1.0.0 (test:helloworld-test) (first run)
+ - helloworld-0.1.0.0 (test:spec) (file test/hspec/MyLibSpec.hs changed)
+Preprocessing test suite 'doctest' for helloworld-0.1.0.0..
+Preprocessing test suite 'helloworld-test' for helloworld-0.1.0.0..
+Preprocessing test suite 'spec' for helloworld-0.1.0.0..
+Building test suite 'doctest' for helloworld-0.1.0.0..
+Building test suite 'helloworld-test' for helloworld-0.1.0.0..
+Building test suite 'spec' for helloworld-0.1.0.0..
+[1 of 2] Compiling MyLibSpec        ( test/hspec/MyLibSpec.hs, /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/spec/build/spec/spec-tmp/MyLibSpec.o ) [Source file changed]
+Running 1 test suites...
+Test suite helloworld-test: RUNNING...
+[2 of 2] Compiling Main             ( test/hspec/Spec.hs, /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/spec/build/spec/spec-tmp/Main.o ) [MyLibSpec changed]
+Test suite helloworld-test: PASS
+Test suite logged to:
+/workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/helloworld-test/test/helloworld-0.1.0.0-helloworld-test.log
+1 of 1 test suites (1 of 1 test cases) passed.
+Running 1 test suites...
+Test suite doctest: RUNNING...
+[3 of 3] Linking /workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/spec/build/spec/spec [Objects changed]
+Test suite doctest: PASS
+Test suite logged to:
+/workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/doctest/test/helloworld-0.1.0.0-doctest.log
+1 of 1 test suites (1 of 1 test cases) passed.
+Running 1 test suites...
+Test suite spec: RUNNING...
+
+MyLib
+  `addInt` takes two arguments of Int and returns the result of adding them.
+    When give addInt 1 and 2 then return 3 [✘]
+
+Failures:
+
+  test/hspec/MyLibSpec.hs:10:30: 
+  1) MyLib, `addInt` takes two arguments of Int and returns the result of adding them., When give addInt 1 and 2 then return 3
+       expected: 2
+        but got: 3
+
+  To rerun use: --match "/MyLib/`addInt` takes two arguments of Int and returns the result of adding them./When give addInt 1 and 2 then return 3/"
+
+Randomized with seed 1699898266
+
+Finished in 0.0184 seconds
+1 example, 1 failure
+
+Test suite spec: FAIL
+Test suite logged to:
+/workspace/projects/helloworld/dist-newstyle/build/x86_64-linux/ghc-9.4.4/helloworld-0.1.0.0/t/spec/test/helloworld-0.1.0.0-spec.log
+0 of 1 test suites (0 of 1 test cases) passed.
+Error: cabal: Tests failed for test:spec from helloworld-0.1.0.0.
+
+1
+root@5499af50db5b:/workspace/projects/helloworld# 
+```

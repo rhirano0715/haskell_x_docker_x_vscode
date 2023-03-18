@@ -1,4 +1,4 @@
-module MyLib (someFunc) where
+module MyLib (someFunc, addInt) where
 
 -- |
 -- Function sample
@@ -6,3 +6,6 @@ module MyLib (someFunc) where
 -- someFunc
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
+
+addInt :: Int -> Int -> Int
+addInt x y = x + y
